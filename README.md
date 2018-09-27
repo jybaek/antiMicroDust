@@ -1,3 +1,5 @@
+[![Python 3.6](https://img.shields.io/badge/python-3.4%2C%203.5%2C%203.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
+
 # antiMicroDust
 Imports micro-dust information from public data and sends it to specific users (friends) on Facebook.
 
