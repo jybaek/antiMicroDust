@@ -16,4 +16,7 @@ def get_data(config):
     response_body = json.loads(response.text)
 
     #print(response.url)
-    return response_body['list'][0]
+    if not response_body['list']:
+        return None
+    else:
+        return response_body['list'][0]
