@@ -19,6 +19,8 @@ if not config['ACCOUNT']['PASSWD']:
 
 fb_client = Client(config['ACCOUNT']['USERID'], config['ACCOUNT']['PASSWD'])
 friends = fb_client.searchForUsers(config['TARGET']['USERNAME'])[0]
+fb_client.sendMessage('HI', thread_id=friends.uid, thread_type=ThreadType.USER)
+exit(255)
 
 prev_data = []
 while True:
@@ -32,7 +34,7 @@ while True:
         msg = "dataTime: %s\npm10    : %s\npm2.5   : %s" % ( curr_data['dataTime'], curr_data['pm10Value'], curr_data['pm25Value'] )
         print(msg)
 
-        if prev_data['pm10Value'] != curr_data['pm10Value'] and prev_data['pm25Value'] != curr_data['pm25Value']:
+        if prev_data['pm10Value'] != curr_data['pm10Value'] or prev_data['pm25Value'] != curr_data['pm25Value']:
             now = datetime.datetime.now()
             if now.hour in list(map(int, config['EXTEND']['MUTE_TIME'].split(','))):
                 print(' # MUTE TIME: %s', now.hour)
@@ -45,6 +47,6 @@ while True:
 
     prev_data = curr_data
 
-    time.sleep(20 * 60) # 20 min
+    time.sleep(10 * 60) # 10 min
 
 fb_client.logout()
