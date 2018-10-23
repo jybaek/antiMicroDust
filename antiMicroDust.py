@@ -1,22 +1,14 @@
 # encoding=utf-8
 
 import configparser
+import dust_info
+import time
+import datetime
+from fbchat import Client
+from fbchat.models import *
 
 config = configparser.RawConfigParser()
 config.read('config.ini')
-
-import dust_info
-
-data = dust_info.get_data(config)
-if data is None:
-    print('Error: get_data is None')
-    exit(255)
-
-'''
-print("dataTime: ", data['dataTime'])
-print("pm10    : ", data['pm10Value'])
-print("pm2.5   : ", data['pm25Value'])
-'''
 
 if not config['ACCOUNT']['USERID']:
     print('Error: USERID in config.ini')
@@ -25,14 +17,34 @@ if not config['ACCOUNT']['PASSWD']:
     print('Error: USERID in config.ini')
     exit(255)
 
-from fbchat import Client
-from fbchat.models import *
-
 fb_client = Client(config['ACCOUNT']['USERID'], config['ACCOUNT']['PASSWD'])
-
 friends = fb_client.searchForUsers(config['TARGET']['USERNAME'])[0]
-msg = "dataTime: %s\npm10    : %s\npm2.5   : %s" % ( data['dataTime'], data['pm10Value'], data['pm25Value'] )
-print(msg)
 
-fb_client.sendMessage(msg, thread_id=friends.uid, thread_type=ThreadType.USER)
+prev_data = []
+while True:
+    curr_data = dust_info.get_data(config)
+    if curr_data is None:
+        print('Error: get_data is None')
+        exit(255)
+
+    if prev_data and (prev_data['dataTime'] != curr_data['dataTime']):
+
+        msg = "dataTime: %s\npm10    : %s\npm2.5   : %s" % ( curr_data['dataTime'], curr_data['pm10Value'], curr_data['pm25Value'] )
+        print(msg)
+
+        if prev_data['pm10Value'] != curr_data['pm10Value'] and prev_data['pm25Value'] != curr_data['pm25Value']:
+            now = datetime.datetime.now()
+            if now.hour in list(map(int, config['EXTEND']['MUTE_TIME'].split(','))):
+                print(' # MUTE TIME: %s', now.hour)
+            else:
+                fb_client.sendMessage(msg, thread_id=friends.uid, thread_type=ThreadType.USER)
+        else:
+            print( ' # SKIP sendMessage: same status ' )
+    else:
+        print(' # SKIP sendMessage: same curr_dataTime [%s]' % curr_data['dataTime'])
+
+    prev_data = curr_data
+
+    time.sleep(20 * 60) # 20 min
+
 fb_client.logout()
