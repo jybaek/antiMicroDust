@@ -5,4 +5,4 @@ configparser==3.5.0
 fbchat==1.4.0
 idna==2.7
 requests>=2.20.0
-urllib3==1.23
+urllib3>=1.24.2
